@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { apiRequest } from './api';
 import { useAuth } from './AuthContext';
 
@@ -10,6 +10,7 @@ function useQuery() {
 export default function Messaging() {
     const { user, token } = useAuth();
     const query = useQuery();
+    const navigate = useNavigate();
     const withUser = query.get('with');
     const product = query.get('product');
     const [messages, setMessages] = useState([]);
@@ -54,7 +55,13 @@ export default function Messaging() {
         setSending(false);
     };
 
+    // Debug logging
+    console.log('Messaging: user.id =', user && user.id, 'withUser =', withUser);
     if (!user) return <div className="text-center py-8">Please log in to use messaging.</div>;
+    if (!withUser || withUser === '' || withUser === user.id) {
+        setTimeout(() => navigate(-1), 2000);
+        return <div className="text-center py-8">Invalid recipient for messaging. Redirecting...</div>;
+    }
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-gray-50">

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { apiRequest } from './api';
 import { useNavigate } from 'react-router-dom';
+// import ContactForm from './ContactForm'; // Remove
 
 const categories = ['All', 'Crops', 'Livestock', 'Services', 'Tools/Inputs'];
 
@@ -11,6 +12,7 @@ export default function MarketplaceFeed() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
+    // const [contactProduct, setContactProduct] = useState(null); // Remove
 
     useEffect(() => {
         fetchProducts();
@@ -32,7 +34,7 @@ export default function MarketplaceFeed() {
     };
 
     return (
-        <div className="max-w-5xl mx-auto p-4">
+        <div className="max-w-6xl mx-auto p-4">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                 <div className="flex gap-2 flex-wrap">
                     {categories.map(cat => (
@@ -73,9 +75,11 @@ export default function MarketplaceFeed() {
                             <span className="text-xs text-gray-500">{product.category}</span>
                         </div>
                         <div className="text-xs text-gray-500 mt-1">{product.location}</div>
+                        {/* Removed Contact Admin button */}
                     </div>
                 ))}
             </div>
+            {/* Removed ContactForm usage */}
             {!loading && products.length === 0 && <div className="text-center py-8 text-gray-500">No products found.</div>}
         </div>
     );

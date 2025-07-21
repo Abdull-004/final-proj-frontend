@@ -1,147 +1,79 @@
 import { useState } from 'react';
-import { useAuth } from './AuthContext';
-
-const roles = ['Farmer', 'Buyer', 'Vet', 'Service Provider'];
+import { useNavigate } from 'react-router-dom';
+import { apiRequest } from './api';
 
 export default function Register() {
-    const { register, loading, error: backendError } = useAuth();
-    const [form, setForm] = useState({
-        name: '',
-        email: '',
-        password: '',
-        role: '',
-        location: ''
-    });
+    const [role, setRole] = useState('customer');
+    const [form, setForm] = useState({ name: '', email: '', password: '', shopName: '', shopDescription: '', location: '' });
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
+    const navigate = useNavigate();
 
     const handleChange = e => {
-        setForm({ ...form, [e.target.name]: e.target.value });
-        if (error) setError(null);
+        setForm(f => ({ ...f, [e.target.name]: e.target.value }));
     };
 
-    const validateForm = () => {
-        if (!form.name.trim()) return "Name is required";
-        if (!form.email.trim()) return "Email is required";
-        if (!/^\S+@\S+\.\S+$/.test(form.email)) return "Invalid email format";
-        if (!form.password) return "Password is required";
-        if (form.password.length < 6) return "Password must be at least 6 characters";
-        if (!form.role) return "Please select a role";
-        return null;
-    };
-
-    const handleSubmit = async (e) => {
+    const handleSubmit = async e => {
         e.preventDefault();
-        setSuccess(false);
-        setError(null);
-
-        const validationError = validateForm();
-        if (validationError) {
-            setError(validationError);
-            return;
-        }
-
-        const ok = await register(form);
-        if (ok) {
+        setLoading(true); setError(null);
+        try {
+            await apiRequest('/auth/register', 'POST', { ...form, role });
             setSuccess(true);
-            setError(null);
-        } else if (backendError) {
-            setError(backendError);
+            setTimeout(() => navigate('/login'), 1500);
+        } catch (err) {
+            setError(err.message);
         }
+        setLoading(false);
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
-            <div className="w-full max-w-md p-6 rounded-xl shadow-lg bg-white border border-gray-200">
-                <h2 className="text-2xl font-bold mb-4 text-center text-green-800">Register</h2>
-
-                {error && (
-                    <div className="mb-4 p-2 bg-red-50 text-red-600 rounded text-center">
-                        {error}
-                    </div>
+        <div className="max-w-md mx-auto p-6 bg-white rounded shadow mt-8">
+            <h2 className="text-2xl font-bold mb-4 text-green-800">Create an Account</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                    <label className="block mb-1 font-medium">Register as</label>
+                    <select name="role" value={role} onChange={e => setRole(e.target.value)} className="w-full border rounded px-3 py-2">
+                        <option value="customer">Customer</option>
+                        <option value="seller">Seller</option>
+                    </select>
+                </div>
+                <div>
+                    <label className="block mb-1 font-medium">Name</label>
+                    <input name="name" value={form.name} onChange={handleChange} required className="w-full border rounded px-3 py-2" />
+                </div>
+                <div>
+                    <label className="block mb-1 font-medium">Email</label>
+                    <input name="email" type="email" value={form.email} onChange={handleChange} required className="w-full border rounded px-3 py-2" />
+                </div>
+                <div>
+                    <label className="block mb-1 font-medium">Password</label>
+                    <input name="password" type="password" value={form.password} onChange={handleChange} required className="w-full border rounded px-3 py-2" />
+                </div>
+                {role === 'seller' && (
+                    <>
+                        <div>
+                            <label className="block mb-1 font-medium">Shop Name</label>
+                            <input name="shopName" value={form.shopName} onChange={handleChange} required={role === 'seller'} className="w-full border rounded px-3 py-2" />
+                        </div>
+                        <div>
+                            <label className="block mb-1 font-medium">Shop Description</label>
+                            <textarea name="shopDescription" value={form.shopDescription} onChange={handleChange} className="w-full border rounded px-3 py-2" />
+                        </div>
+                    </>
                 )}
-
-                {success && (
-                    <div className="mb-4 p-2 bg-green-50 text-green-600 rounded text-center">
-                        Registration successful! You can now login.
-                    </div>
-                )}
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    {/* Name Field */}
-                    <div>
-                        <label className="block mb-1 font-medium text-gray-700">Name</label>
-                        <input
-                            type="text"
-                            name="name"
-                            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                            value={form.name}
-                            onChange={handleChange}
-                        />
-                    </div>
-
-                    {/* Email Field */}
-                    <div>
-                        <label className="block mb-1 font-medium text-gray-700">Email</label>
-                        <input
-                            type="email"
-                            name="email"
-                            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                            value={form.email}
-                            onChange={handleChange}
-                        />
-                    </div>
-
-                    {/* Password Field */}
-                    <div>
-                        <label className="block mb-1 font-medium text-gray-700">Password</label>
-                        <input
-                            type="password"
-                            name="password"
-                            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                            value={form.password}
-                            onChange={handleChange}
-                            minLength="6"
-                        />
-                    </div>
-
-                    {/* Role Selection */}
-                    <div>
-                        <label className="block mb-1 font-medium text-gray-700">Role</label>
-                        <select
-                            name="role"
-                            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                            value={form.role}
-                            onChange={handleChange}
-                        >
-                            <option value="">Select your role</option>
-                            {roles.map(role => (
-                                <option key={role} value={role}>{role}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* Location Field */}
-                    <div>
-                        <label className="block mb-1 font-medium text-gray-700">Location</label>
-                        <input
-                            type="text"
-                            name="location"
-                            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                            value={form.location}
-                            onChange={handleChange}
-                        />
-                    </div>
-
-                    {/* Submit Button */}
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className={`w-full py-2 rounded font-semibold text-white ${loading ? 'bg-gray-400' : 'bg-green-700 hover:bg-green-800'}`}
-                    >
-                        {loading ? 'Processing...' : 'Register'}
-                    </button>
-                </form>
+                <div>
+                    <label className="block mb-1 font-medium">Location (optional)</label>
+                    <input name="location" value={form.location} onChange={handleChange} className="w-full border rounded px-3 py-2" />
+                </div>
+                <button type="submit" className="w-full bg-green-700 text-white py-2 rounded font-semibold" disabled={loading}>
+                    {loading ? 'Registering...' : 'Register'}
+                </button>
+                {error && <div className="text-red-600 text-center mt-2">{error}</div>}
+                {success && <div className="text-green-700 text-center mt-2">Registration successful! Redirecting...</div>}
+            </form>
+            <div className="text-center mt-4 text-sm">
+                Already have an account? <span className="text-green-700 cursor-pointer" onClick={() => navigate('/login')}>Login</span>
             </div>
         </div>
     );

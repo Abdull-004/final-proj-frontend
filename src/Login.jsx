@@ -1,53 +1,49 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 
 export default function Login() {
-    const { login, loading, error } = useAuth();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [success, setSuccess] = useState(false);
+    const { login } = useAuth();
+    const [form, setForm] = useState({ email: '', password: '' });
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
+    const handleChange = e => {
+        setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+    };
+
+    const handleSubmit = async e => {
         e.preventDefault();
-        const ok = await login(email, password);
-        setSuccess(ok);
+        setLoading(true); setError(null);
+        const success = await login(form.email, form.password);
+        if (success) {
+            navigate('/');
+        } else {
+            setError('Invalid credentials');
+        }
+        setLoading(false);
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-50">
-            <div className="w-full max-w-md p-6 rounded-xl shadow-lg bg-white border border-gray-200">
-                <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
-                {error && <div className="mb-2 text-red-600 text-center">{error}</div>}
-                {success && <div className="mb-2 text-green-600 text-center">Login successful!</div>}
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block mb-1 font-medium">Email</label>
-                        <input
-                            type="email"
-                            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                            value={email}
-                            onChange={e => setEmail(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label className="block mb-1 font-medium">Password</label>
-                        <input
-                            type="password"
-                            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                            value={password}
-                            onChange={e => setPassword(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        className="w-full bg-green-700 text-white py-2 rounded hover:bg-green-800 disabled:opacity-50 font-semibold"
-                        disabled={loading}
-                    >
-                        {loading ? 'Logging in...' : 'Login'}
-                    </button>
-                </form>
+        <div className="max-w-md mx-auto p-6 bg-white rounded shadow mt-8">
+            <h2 className="text-2xl font-bold mb-4 text-green-800">Login</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                    <label className="block mb-1 font-medium">Email</label>
+                    <input name="email" type="email" value={form.email} onChange={handleChange} required className="w-full border rounded px-3 py-2" />
+                </div>
+                <div>
+                    <label className="block mb-1 font-medium">Password</label>
+                    <input name="password" type="password" value={form.password} onChange={handleChange} required className="w-full border rounded px-3 py-2" />
+                </div>
+                <button type="submit" className="w-full bg-green-700 text-white py-2 rounded font-semibold" disabled={loading}>
+                    {loading ? 'Logging in...' : 'Login'}
+                </button>
+                {error && <div className="text-red-600 text-center mt-2">{error}</div>}
+            </form>
+            <div className="text-center mt-4 text-sm">
+                Don&apos;t have an account? <span className="text-green-700 cursor-pointer" onClick={() => navigate('/register')}>Register</span>
             </div>
         </div>
     );
