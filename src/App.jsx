@@ -1,20 +1,19 @@
-import { useState } from "react";
-import { Routes, Route, Link } from "react-router-dom";
+import { Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 import Login from './Login';
 import Register from './Register';
 import MarketplaceFeed from './MarketplaceFeed';
 import ProductDetails from './ProductDetails';
 import ProductForm from './ProductForm';
-import { useAuth } from './AuthContext';
 import Messaging from './Messaging';
 
 export default function App() {
   const { user, logout } = useAuth();
-
+  const navigate = useNavigate();
   return (
     <>
       <nav className="flex items-center justify-between p-4 bg-white shadow mb-4">
-        <div className="font-bold text-lg text-green-700">Garissa Market Hub</div>
+        <div className="font-bold text-lg text-green-700 cursor-pointer" onClick={() => navigate('/')}>Garissa Market Hub</div>
         <div className="space-x-4 flex items-center">
           <Link to="/" className="text-gray-700 hover:text-green-700">Home</Link>
           {user && <Link to="/create-product" className="text-gray-700 hover:text-green-700">Create Listing</Link>}
@@ -29,7 +28,6 @@ export default function App() {
           )}
         </div>
       </nav>
-
       <Routes>
         <Route path="/" element={<MarketplaceFeed />} />
         <Route path="/login" element={<Login />} />
@@ -42,4 +40,3 @@ export default function App() {
     </>
   );
 }
-

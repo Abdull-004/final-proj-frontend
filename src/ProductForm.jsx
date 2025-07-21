@@ -65,76 +65,78 @@ export default function ProductForm({ editMode = false }) {
     };
 
     return (
-        <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded shadow">
-            <h2 className="text-2xl font-bold mb-4 text-center">{editMode ? 'Edit Listing' : 'Create Listing'}</h2>
-            {error && <div className="mb-2 text-red-600">{error}</div>}
-            {success && <div className="mb-2 text-green-600">{editMode ? 'Product updated!' : 'Product created!'}</div>}
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                    <label className="block mb-1 font-medium">Title</label>
-                    <input
-                        type="text"
-                        name="title"
-                        className="w-full border rounded px-3 py-2"
-                        value={form.title}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div>
-                    <label className="block mb-1 font-medium">Price</label>
-                    <input
-                        type="number"
-                        name="price"
-                        className="w-full border rounded px-3 py-2"
-                        value={form.price}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div>
-                    <label className="block mb-1 font-medium">Description</label>
-                    <textarea
-                        name="description"
-                        className="w-full border rounded px-3 py-2"
-                        value={form.description}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div>
-                    <label className="block mb-1 font-medium">Category</label>
-                    <select
-                        name="category"
-                        className="w-full border rounded px-3 py-2"
-                        value={form.category}
-                        onChange={handleChange}
-                        required
+        <div className="flex min-h-screen items-center justify-center bg-gray-50">
+            <div className="w-full max-w-md p-6 rounded-xl shadow-lg bg-white border border-gray-200">
+                <h2 className="text-2xl font-bold mb-4 text-center">{editMode ? 'Edit Listing' : 'Create Listing'}</h2>
+                {error && <div className="mb-2 text-red-600 text-center">{error}</div>}
+                {success && <div className="mb-2 text-green-600 text-center">{editMode ? 'Product updated!' : 'Product created!'}</div>}
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label className="block mb-1 font-medium">Title</label>
+                        <input
+                            type="text"
+                            name="title"
+                            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            value={form.title}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block mb-1 font-medium">Price</label>
+                        <input
+                            type="number"
+                            name="price"
+                            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            value={form.price}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block mb-1 font-medium">Description</label>
+                        <textarea
+                            name="description"
+                            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            value={form.description}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block mb-1 font-medium">Category</label>
+                        <select
+                            name="category"
+                            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            value={form.category}
+                            onChange={handleChange}
+                            required
+                        >
+                            <option value="">Select category</option>
+                            {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block mb-1 font-medium">Location</label>
+                        <input
+                            type="text"
+                            name="location"
+                            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            value={form.location}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+                    {/* Image upload can be added here in the future */}
+                    <button
+                        type="submit"
+                        className="w-full bg-green-700 text-white py-2 rounded hover:bg-green-800 disabled:opacity-50 font-semibold"
+                        disabled={loading}
                     >
-                        <option value="">Select category</option>
-                        {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                </div>
-                <div>
-                    <label className="block mb-1 font-medium">Location</label>
-                    <input
-                        type="text"
-                        name="location"
-                        className="w-full border rounded px-3 py-2"
-                        value={form.location}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                {/* Image upload can be added here in the future */}
-                <button
-                    type="submit"
-                    className="w-full bg-green-700 text-white py-2 rounded hover:bg-green-800 disabled:opacity-50"
-                    disabled={loading}
-                >
-                    {loading ? (editMode ? 'Updating...' : 'Creating...') : (editMode ? 'Update' : 'Create')}
-                </button>
-            </form>
+                        {loading ? (editMode ? 'Updating...' : 'Creating...') : (editMode ? 'Update' : 'Create')}
+                    </button>
+                </form>
+            </div>
         </div>
     );
 } 

@@ -9,44 +9,63 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
+    // Initialize user from token
     useEffect(() => {
         if (token) {
-            // Optionally fetch user profile here
-            setUser(JSON.parse(localStorage.getItem('user')));
+            const userData = localStorage.getItem('user');
+            try {
+                setUser(userData ? JSON.parse(userData) : null);
+            } catch (err) {
+                console.error("Failed to parse user data:", err);
+                logout();
+            }
         }
     }, [token]);
 
+    const handleAuthResponse = (res) => {
+        if (!res.token || !res.user) {
+            throw new Error("Invalid server response");
+        }
+
+        setToken(res.token);
+        setUser(res.user);
+        localStorage.setItem('token', res.token);
+        localStorage.setItem('user', JSON.stringify(res.user));
+        return true;
+    };
+
     const login = async (email, password) => {
-        setLoading(true); setError(null);
+        setLoading(true);
+        setError(null);
         try {
             const res = await apiRequest('/auth/login', 'POST', { email, password });
-            setToken(res.token);
-            setUser(res.user);
-            localStorage.setItem('token', res.token);
-            localStorage.setItem('user', JSON.stringify(res.user));
-            setLoading(false);
-            return true;
+            return handleAuthResponse(res);
         } catch (err) {
-            setError(err.message);
-            setLoading(false);
+            const errorMsg = err.response?.data?.message || err.message || "Login failed";
+            setError(errorMsg);
             return false;
+        } finally {
+            setLoading(false);
         }
     };
 
     const register = async (data) => {
-        setLoading(true); setError(null);
+        setLoading(true);
+        setError(null);
         try {
+            // Basic frontend validation
+            if (!data.name || !data.email || !data.password || !data.role) {
+                throw new Error("All fields are required");
+            }
+
             const res = await apiRequest('/auth/register', 'POST', data);
-            setToken(res.token);
-            setUser(res.user);
-            localStorage.setItem('token', res.token);
-            localStorage.setItem('user', JSON.stringify(res.user));
-            setLoading(false);
-            return true;
+            return handleAuthResponse(res);
         } catch (err) {
-            setError(err.message);
-            setLoading(false);
+            const errorMsg = err.response?.data?.message || err.message || "Registration failed";
+            setError(errorMsg);
             return false;
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -58,12 +77,24 @@ export function AuthProvider({ children }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, loading, error, login, register, logout }}>
+        <AuthContext.Provider value={{
+            user,
+            token,
+            loading,
+            error,
+            login,
+            register,
+            logout
+        }}>
             {children}
         </AuthContext.Provider>
     );
 }
 
 export function useAuth() {
-    return useContext(AuthContext);
-} 
+    const context = useContext(AuthContext);
+    if (!context) {
+        throw new Error('useAuth must be used within an AuthProvider');
+    }
+    return context;
+}

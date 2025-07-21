@@ -1,53 +1,147 @@
 import { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 
-export default function Register() {
-    const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'Farmer' });
-    const [error, setError] = useState('');
-    const navigate = useNavigate();
-    const { login } = useAuth();
+const roles = ['Farmer', 'Buyer', 'Vet', 'Service Provider'];
 
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+export default function Register() {
+    const { register, loading } = useAuth();
+    const [form, setForm] = useState({
+        name: '',
+        email: '',
+        password: '',
+        role: '',
+        location: ''
+    });
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(false);
+
+    const handleChange = e => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+        // Clear errors when user types
+        if (error) setError(null);
+    };
+
+    const validateForm = () => {
+        if (!form.name.trim()) return "Name is required";
+        if (!form.email.trim()) return "Email is required";
+        if (!/^\S+@\S+\.\S+$/.test(form.email)) return "Invalid email format";
+        if (!form.password) return "Password is required";
+        if (form.password.length < 6) return "Password must be at least 6 characters";
+        if (!form.role) return "Please select a role";
+        return null;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
 
-        try {
-            const res = await axios.post('http://localhost:5000/api/auth/register', formData);
-            login(res.data.user); // or res.data depending on your backend
-            navigate('/');
-        } catch (err) {
-            console.error(err);
-            if (err.response?.data?.message) {
-                setError(err.response.data.message);
-            } else {
-                setError("Registration failed. Please try again.");
-            }
+        const validationError = validateForm();
+        if (validationError) {
+            setError(validationError);
+            return;
+        }
+
+        const ok = await register(form);
+        if (ok) {
+            setSuccess(true);
+            setError(null);
+            // Optional: Reset form after successful registration
+            // setForm({ name: '', email: '', password: '', role: '', location: '' });
         }
     };
 
     return (
-        <form onSubmit={handleSubmit} className="max-w-md mx-auto p-4 bg-white shadow rounded">
-            <h2 className="text-xl font-bold mb-4">Register</h2>
+        <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+            <div className="w-full max-w-md p-6 rounded-xl shadow-lg bg-white border border-gray-200">
+                <h2 className="text-2xl font-bold mb-4 text-center text-green-800">Register</h2>
 
-            {error && <p className="text-red-600 mb-2">{error}</p>}
+                {error && (
+                    <div className="mb-4 p-2 bg-red-50 text-red-600 rounded text-center">
+                        {error}
+                    </div>
+                )}
 
-            <input name="name" placeholder="Name" onChange={handleChange} required className="w-full mb-2 p-2 border" />
-            <input name="email" type="email" placeholder="Email" onChange={handleChange} required className="w-full mb-2 p-2 border" />
-            <input name="password" type="password" placeholder="Password" onChange={handleChange} required className="w-full mb-2 p-2 border" />
-            <select name="role" onChange={handleChange} required className="w-full mb-4 p-2 border">
-                <option value="Farmer">Farmer</option>
-                <option value="Buyer">Buyer</option>
-                <option value="Vet">Veterinary Doctor</option>
-                <option value="Service Provider">Service Provider</option>
-            </select>
+                {success && (
+                    <div className="mb-4 p-2 bg-green-50 text-green-600 rounded text-center">
+                        Registration successful! You can now login.
+                    </div>
+                )}
 
-            <button type="submit" className="bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800">Register</button>
-        </form>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* Name Field */}
+                    <div>
+                        <label className="block mb-1 font-medium text-gray-700">Name</label>
+                        <input
+                            type="text"
+                            name="name"
+                            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            value={form.name}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    {/* Email Field */}
+                    <div>
+                        <label className="block mb-1 font-medium text-gray-700">Email</label>
+                        <input
+                            type="email"
+                            name="email"
+                            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            value={form.email}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    {/* Password Field */}
+                    <div>
+                        <label className="block mb-1 font-medium text-gray-700">Password</label>
+                        <input
+                            type="password"
+                            name="password"
+                            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            value={form.password}
+                            onChange={handleChange}
+                            minLength="6"
+                        />
+                    </div>
+
+                    {/* Role Selection */}
+                    <div>
+                        <label className="block mb-1 font-medium text-gray-700">Role</label>
+                        <select
+                            name="role"
+                            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            value={form.role}
+                            onChange={handleChange}
+                        >
+                            <option value="">Select your role</option>
+                            {roles.map(role => (
+                                <option key={role} value={role}>{role}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Location Field */}
+                    <div>
+                        <label className="block mb-1 font-medium text-gray-700">Location</label>
+                        <input
+                            type="text"
+                            name="location"
+                            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            value={form.location}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    {/* Submit Button */}
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className={`w-full py-2 rounded font-semibold text-white ${loading ? 'bg-gray-400' : 'bg-green-700 hover:bg-green-800'}`}
+                    >
+                        {loading ? 'Processing...' : 'Register'}
+                    </button>
+                </form>
+            </div>
+        </div>
     );
 }

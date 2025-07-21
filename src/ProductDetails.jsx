@@ -57,12 +57,12 @@ export default function ProductDetails() {
     const isAdmin = user && user.role === 'Admin';
 
     return (
-        <div className="max-w-2xl mx-auto p-4 bg-white rounded shadow mt-6">
+        <div className="max-w-2xl mx-auto p-4 bg-white rounded-xl shadow-lg mt-6 border border-gray-100">
             <div className="flex items-center justify-between mb-2">
-                <h2 className="text-2xl font-bold">{product.title}</h2>
-                {product.isVerified && <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Verified</span>}
+                <h2 className="text-2xl font-bold text-green-800">{product.title}</h2>
+                {product.isVerified && <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-semibold">Verified</span>}
             </div>
-            <div className="mb-2 text-gray-700">{product.description}</div>
+            <div className="mb-2 text-gray-700 text-lg">{product.description}</div>
             <div className="mb-2">Price: <span className="font-semibold text-green-700">Ksh {product.price}</span></div>
             <div className="mb-2">Category: <span className="text-gray-700">{product.category}</span></div>
             <div className="mb-2">Location: <span className="text-gray-700">{product.location}</span></div>

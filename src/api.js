@@ -13,6 +13,7 @@ export const apiRequest = async (endpoint, method = 'GET', data = null, token = 
     if (data) options.body = JSON.stringify(data);
 
     const res = await fetch(`${API_URL}${endpoint}`, options);
+
     const result = await res.json();
     if (!res.ok) throw new Error(result.message || 'API error');
     return result;

@@ -56,39 +56,41 @@ export default function Messaging() {
     if (!user) return <div className="text-center py-8">Please log in to use messaging.</div>;
 
     return (
-        <div className="max-w-2xl mx-auto p-4 bg-white rounded shadow mt-6 flex flex-col h-[70vh]">
-            <h2 className="text-xl font-bold mb-4">Chat</h2>
-            {loading && <div className="text-center py-4">Loading...</div>}
-            {error && <div className="text-center text-red-600 py-2">{error}</div>}
-            <div className="flex-1 overflow-y-auto mb-4 bg-gray-50 rounded p-2">
-                {messages.map(msg => (
-                    <div key={msg._id} className={`mb-2 flex ${msg.sender._id === user.id ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`px-3 py-2 rounded-lg max-w-xs ${msg.sender._id === user.id ? 'bg-green-100 text-green-900' : 'bg-gray-200 text-gray-900'}`}>
-                            <div className="text-xs font-semibold mb-1">{msg.sender._id === user.id ? 'You' : msg.sender.name}</div>
-                            <div>{msg.content}</div>
-                            <div className="text-[10px] text-gray-500 mt-1">{new Date(msg.createdAt).toLocaleString()}</div>
+        <div className="flex min-h-screen items-center justify-center bg-gray-50">
+            <div className="w-full max-w-xl p-6 rounded-xl shadow-lg bg-white border border-gray-200 flex flex-col h-[70vh]">
+                <h2 className="text-xl font-bold mb-4">Chat</h2>
+                {loading && <div className="text-center py-4">Loading...</div>}
+                {error && <div className="text-center text-red-600 py-2">{error}</div>}
+                <div className="flex-1 overflow-y-auto mb-4 bg-gray-50 rounded p-2">
+                    {messages.map(msg => (
+                        <div key={msg._id} className={`mb-2 flex ${msg.sender._id === user.id ? 'justify-end' : 'justify-start'}`}>
+                            <div className={`px-3 py-2 rounded-lg max-w-xs ${msg.sender._id === user.id ? 'bg-green-100 text-green-900' : 'bg-gray-200 text-gray-900'}`}>
+                                <div className="text-xs font-semibold mb-1">{msg.sender._id === user.id ? 'You' : msg.sender.name}</div>
+                                <div>{msg.content}</div>
+                                <div className="text-[10px] text-gray-500 mt-1">{new Date(msg.createdAt).toLocaleString()}</div>
+                            </div>
                         </div>
-                    </div>
-                ))}
-                <div ref={messagesEndRef} />
+                    ))}
+                    <div ref={messagesEndRef} />
+                </div>
+                <form onSubmit={handleSend} className="flex gap-2">
+                    <input
+                        type="text"
+                        className="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                        placeholder="Type a message..."
+                        value={content}
+                        onChange={e => setContent(e.target.value)}
+                        disabled={sending}
+                    />
+                    <button
+                        type="submit"
+                        className="bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800 disabled:opacity-50 font-semibold"
+                        disabled={sending}
+                    >
+                        Send
+                    </button>
+                </form>
             </div>
-            <form onSubmit={handleSend} className="flex gap-2">
-                <input
-                    type="text"
-                    className="flex-1 border rounded px-3 py-2"
-                    placeholder="Type a message..."
-                    value={content}
-                    onChange={e => setContent(e.target.value)}
-                    disabled={sending}
-                />
-                <button
-                    type="submit"
-                    className="bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800 disabled:opacity-50"
-                    disabled={sending}
-                >
-                    Send
-                </button>
-            </form>
         </div>
     );
 } 
