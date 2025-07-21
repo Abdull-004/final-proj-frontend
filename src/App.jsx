@@ -6,6 +6,7 @@ import MarketplaceFeed from './MarketplaceFeed';
 import ProductDetails from './ProductDetails';
 import ProductForm from './ProductForm';
 import Messaging from './Messaging';
+import Profile from './Profile';
 
 export default function App() {
   const { user, logout } = useAuth();
@@ -16,7 +17,8 @@ export default function App() {
         <div className="font-bold text-lg text-green-700 cursor-pointer" onClick={() => navigate('/')}>Garissa Market Hub</div>
         <div className="space-x-4 flex items-center">
           <Link to="/" className="text-gray-700 hover:text-green-700">Home</Link>
-          {user && <Link to="/create-product" className="text-gray-700 hover:text-green-700">Create Listing</Link>}
+          {user && user.role === 'Farmer' && <Link to="/create-product" className="text-gray-700 hover:text-green-700">Create Listing</Link>}
+          {user && (user.role === 'Vet' || user.role === 'Service Provider') && <Link to="/profile" className="text-gray-700 hover:text-green-700">Profile</Link>}
           {user && <Link to="/messages" className="text-gray-700 hover:text-green-700">Messages</Link>}
           {!user && <Link to="/login" className="text-gray-700 hover:text-green-700">Login</Link>}
           {!user && <Link to="/register" className="text-gray-700 hover:text-green-700">Register</Link>}
@@ -33,8 +35,9 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/product/:id" element={<ProductDetails />} />
-        {user && <Route path="/create-product" element={<ProductForm />} />}
-        {user && <Route path="/edit-product/:id" element={<ProductForm editMode={true} />} />}
+        {user && user.role === 'Farmer' && <Route path="/create-product" element={<ProductForm />} />}
+        {user && user.role === 'Farmer' && <Route path="/edit-product/:id" element={<ProductForm editMode={true} />} />}
+        {user && (user.role === 'Vet' || user.role === 'Service Provider') && <Route path="/profile" element={<Profile />} />}
         <Route path="/messages" element={<Messaging />} />
       </Routes>
     </>

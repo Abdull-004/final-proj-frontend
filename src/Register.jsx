@@ -4,7 +4,7 @@ import { useAuth } from './AuthContext';
 const roles = ['Farmer', 'Buyer', 'Vet', 'Service Provider'];
 
 export default function Register() {
-    const { register, loading } = useAuth();
+    const { register, loading, error: backendError } = useAuth();
     const [form, setForm] = useState({
         name: '',
         email: '',
@@ -17,7 +17,6 @@ export default function Register() {
 
     const handleChange = e => {
         setForm({ ...form, [e.target.name]: e.target.value });
-        // Clear errors when user types
         if (error) setError(null);
     };
 
@@ -33,6 +32,8 @@ export default function Register() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setSuccess(false);
+        setError(null);
 
         const validationError = validateForm();
         if (validationError) {
@@ -44,8 +45,8 @@ export default function Register() {
         if (ok) {
             setSuccess(true);
             setError(null);
-            // Optional: Reset form after successful registration
-            // setForm({ name: '', email: '', password: '', role: '', location: '' });
+        } else if (backendError) {
+            setError(backendError);
         }
     };
 

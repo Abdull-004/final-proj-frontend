@@ -47,6 +47,7 @@ export default function Messaging() {
             await apiRequest('/messages', 'POST', { receiver: withUser, product, content }, token);
             setContent('');
             fetchMessages();
+            setError(null);
         } catch (err) {
             setError(err.message);
         }

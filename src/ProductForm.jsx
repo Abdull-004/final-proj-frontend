@@ -6,7 +6,7 @@ import { useAuth } from './AuthContext';
 const categories = ['Crops', 'Livestock', 'Services', 'Tools/Inputs'];
 
 export default function ProductForm({ editMode = false }) {
-    const { token } = useAuth();
+    const { token, user } = useAuth();
     const { id } = useParams();
     const navigate = useNavigate();
     const [form, setForm] = useState({
@@ -15,6 +15,18 @@ export default function ProductForm({ editMode = false }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
+
+    // Restrict access to Farmers only
+    if (!user || user.role !== 'Farmer') {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-gray-50">
+                <div className="w-full max-w-md p-6 rounded-xl shadow-lg bg-white border border-gray-200 text-center">
+                    <h2 className="text-2xl font-bold mb-4">Access Denied</h2>
+                    <p className="text-red-600">Only Farmers can create or edit products.</p>
+                </div>
+            </div>
+        );
+    }
 
     useEffect(() => {
         if (editMode && id) {
@@ -52,14 +64,17 @@ export default function ProductForm({ editMode = false }) {
             if (editMode) {
                 await apiRequest(`/products/${id}`, 'PUT', form, token);
                 setSuccess(true);
+                setError(null);
                 setTimeout(() => navigate(`/product/${id}`), 1000);
             } else {
                 const res = await apiRequest('/products', 'POST', form, token);
                 setSuccess(true);
+                setError(null);
                 setTimeout(() => navigate(`/product/${res._id}`), 1000);
             }
         } catch (err) {
             setError(err.message);
+            setSuccess(false);
         }
         setLoading(false);
     };
