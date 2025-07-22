@@ -1,20 +1,21 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// src/api.js
+
+export const API_BASE = import.meta.env.VITE_API_BASE_URL || "https://final-proj-2-ypf3.onrender.com";
 
 export const apiRequest = async (endpoint, method = 'GET', data = null, token = null) => {
-    const headers = {
-        'Content-Type': 'application/json',
-    };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers.Authorization = `Bearer ${token}`;
 
-    const options = {
+    const res = await fetch(`${API_BASE}/api${endpoint}`, {
         method,
         headers,
-    };
-    if (data) options.body = JSON.stringify(data);
+        body: data ? JSON.stringify(data) : null,
+    });
 
-    const res = await fetch(`${API_URL}${endpoint}`, options);
+    if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err);
+    }
 
-    const result = await res.json();
-    if (!res.ok) throw new Error(result.message || 'API error');
-    return result;
-}; 
+    return await res.json();
+};
