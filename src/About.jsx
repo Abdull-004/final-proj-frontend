@@ -58,7 +58,7 @@ export default function About() {
             <section className="max-w-3xl mx-auto mt-20 text-center">
                 <div className="bg-gradient-to-r from-green-700 to-green-500 rounded-2xl p-10 shadow-xl">
                     <h2 className="text-3xl font-bold text-white mb-2">Ready to Grow?</h2>
-                    <p className="text-white mb-4 text-lg">Join Garissa Agrovet and experience the future of agriculture. Register for free to access exclusive offers, track your orders, and get personalized support.</p>
+                    <p className="text-white mb-4 text-lg">Join Farmcare Agrovet and experience the future of agriculture. Register for free to access exclusive offers, track your orders, and get personalized support.</p>
                     <a href="/account" className="inline-block bg-white text-green-700 font-bold px-10 py-4 rounded-xl text-xl shadow-lg hover:bg-green-100 transition">Register Now</a>
                 </div>
             </section>
