@@ -28,7 +28,7 @@ export default function App() {
             onClick={() => navigate('/')}
             className="text-xl font-bold text-green-600 cursor-pointer"
           >
-            Garissa Agrovet
+            Farmcare Agrovet
           </div>
 
           {/* Desktop menu */}
