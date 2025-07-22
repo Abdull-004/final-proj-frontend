@@ -2,9 +2,9 @@ function Footer() {
     return (
         <footer className="mt-16 bg-green-800 text-white py-8 text-center rounded-t-3xl shadow-inner">
             <div className="max-w-4xl mx-auto px-4">
-                <div className="mb-2 font-bold text-lg">Garissa Agrovet Online Store</div>
+                <div className="mb-2 font-bold text-lg">Farmcare Agrovet Online Store</div>
                 <div className="mb-2">Empowering farmers and communities in Northern Kenya</div>
-                <div className="text-sm text-green-100">&copy; {new Date().getFullYear()} Garissa Agrovet. All rights reserved.</div>
+                <div className="text-sm text-green-100">&copy; {new Date().getFullYear()} Farmcare Agrovet. All rights reserved.</div>
             </div>
         </footer>
     );
@@ -18,7 +18,7 @@ export default function Services() {
                 <div className="max-w-4xl mx-auto px-4 text-center">
                     <h1 className="text-5xl font-extrabold mb-4 drop-shadow-lg">Our Services</h1>
                     <p className="text-xl font-medium mb-6 max-w-2xl mx-auto drop-shadow">
-                        More than products—Garissa Agrovet delivers value-added services to help you grow, learn, and thrive in agriculture and livestock management.
+                        More than products—Farmcare Agrovet delivers value-added services to help you grow, learn, and thrive in agriculture and livestock management.
                     </p>
                 </div>
             </section>

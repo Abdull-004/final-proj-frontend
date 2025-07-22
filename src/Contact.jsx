@@ -2,9 +2,9 @@ function Footer() {
     return (
         <footer className="mt-16 bg-green-800 text-white py-8 text-center rounded-t-3xl shadow-inner">
             <div className="max-w-4xl mx-auto px-4">
-                <div className="mb-2 font-bold text-lg">Garissa Agrovet Online Store</div>
+                <div className="mb-2 font-bold text-lg">Farmcare Agrovet Online Store</div>
                 <div className="mb-2">Empowering farmers and communities in Northern Kenya</div>
-                <div className="text-sm text-green-100">&copy; {new Date().getFullYear()} Garissa Agrovet. All rights reserved.</div>
+                <div className="text-sm text-green-100">&copy; {new Date().getFullYear()} Farmcare Agrovet. All rights reserved.</div>
             </div>
         </footer>
     );
@@ -27,7 +27,7 @@ export default function Contact() {
                 <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center text-center">
                     <span className="text-3xl mb-2">📧</span>
                     <div className="font-bold text-green-800 mb-1">Email</div>
-                    <div className="text-gray-700">info@garissaagrovet.com</div>
+                    <div className="text-gray-700">info@farmcareagrovet.com</div>
                 </div>
                 <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center text-center">
                     <span className="text-3xl mb-2">📞</span>

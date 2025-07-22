@@ -5,7 +5,7 @@ export default function About() {
             <section className="relative py-20 md:py-28 bg-gradient-to-r from-green-800 to-green-500 text-white shadow-xl rounded-b-3xl overflow-hidden">
                 <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80')] bg-cover bg-center opacity-20" />
                 <div className="relative max-w-5xl mx-auto px-4 text-center z-10">
-                    <h1 className="text-5xl md:text-6xl font-extrabold mb-4 drop-shadow-lg tracking-tight">Garissa Agrovet Online Store</h1>
+                    <h1 className="text-5xl md:text-6xl font-extrabold mb-4 drop-shadow-lg tracking-tight">Farmcare Agrovet Online Store</h1>
                     <p className="text-2xl font-medium mb-8 max-w-2xl mx-auto drop-shadow">
                         The next-generation digital marketplace for farm inputs, livestock supplies, and expert support in Northern Kenya.
                     </p>
@@ -23,7 +23,7 @@ export default function About() {
                 <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center text-center hover:shadow-2xl transition">
                     <span className="text-4xl mb-3">🚚</span>
                     <h3 className="text-xl font-bold text-green-800 mb-2">Fast, Reliable Delivery</h3>
-                    <p className="text-gray-700">We reach your farm or home, even in remote areas of Garissa and Northern Kenya.</p>
+                    <p className="text-gray-700">We reach your farm or home, even in remote areas of Farmcare and Northern Kenya.</p>
                 </div>
                 <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center text-center hover:shadow-2xl transition">
                     <span className="text-4xl mb-3">💡</span>
