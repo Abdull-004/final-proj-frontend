@@ -1,18 +1,32 @@
+import { Link } from 'react-router-dom';
+
+// Reusable Footer component
 function Footer() {
     return (
-        <footer className="mt-16 bg-green-800 text-white py-8 text-center rounded-t-3xl shadow-inner">
+        <footer className="mt-20 bg-green-800 text-white py-8 text-center rounded-t-3xl shadow-inner">
             <div className="max-w-4xl mx-auto px-4">
-                <div className="mb-2 font-bold text-lg">Farmcare Agrovet Online Store</div>
-                <div className="mb-2">Empowering farmers and communities in Northern Kenya</div>
-                <div className="text-sm text-green-100">&copy; {new Date().getFullYear()} Farmcare Agrovet. All rights reserved.</div>
+                <h2 className="mb-2 font-bold text-lg">Farmcare Agrovet Online Store</h2>
+                <p className="mb-2">Empowering farmers and communities in Northern Kenya</p>
+                <p className="text-sm text-green-100">&copy; {new Date().getFullYear()} Farmcare Agrovet. All rights reserved.</p>
             </div>
         </footer>
     );
 }
 
+// Reusable card component
+function ServiceCard({ icon, title, description }) {
+    return (
+        <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center text-center hover:shadow-2xl transition duration-300">
+            <span className="text-4xl mb-3">{icon}</span>
+            <h3 className="text-xl font-bold text-green-800 mb-2">{title}</h3>
+            <p className="text-gray-700">{description}</p>
+        </div>
+    );
+}
+
 export default function Services() {
     return (
-        <div className="bg-gradient-to-br from-green-50 via-white to-green-100 min-h-screen pb-16">
+        <div className="bg-gradient-to-br from-green-50 via-white to-green-100 min-h-screen pb-20">
             {/* Hero Section */}
             <section className="py-16 bg-gradient-to-r from-green-700 to-green-400 text-white shadow-xl rounded-b-3xl">
                 <div className="max-w-4xl mx-auto px-4 text-center">
@@ -23,45 +37,54 @@ export default function Services() {
                 </div>
             </section>
 
-            {/* Services Feature Cards */}
+            {/* Main Services */}
             <section className="max-w-5xl mx-auto px-4 mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center text-center hover:shadow-2xl transition">
-                    <span className="text-4xl mb-3">🧑‍🌾</span>
-                    <h3 className="text-xl font-bold text-green-800 mb-2">Farm Advisory</h3>
-                    <p className="text-gray-700">Personalized guidance on crop selection, pest management, and best practices.</p>
-                </div>
-                <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center text-center hover:shadow-2xl transition">
-                    <span className="text-4xl mb-3">🧪</span>
-                    <h3 className="text-xl font-bold text-green-800 mb-2">Soil Testing</h3>
-                    <p className="text-gray-700">Accurate soil analysis and fertilizer recommendations for better yields.</p>
-                </div>
-                <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center text-center hover:shadow-2xl transition">
-                    <span className="text-4xl mb-3">🐄</span>
-                    <h3 className="text-xl font-bold text-green-800 mb-2">Animal Health Clinics</h3>
-                    <p className="text-gray-700">On-site and virtual vet consultations, vaccination drives, and disease prevention.</p>
-                </div>
+                <ServiceCard
+                    icon="🧑‍🌾"
+                    title="Farm Advisory"
+                    description="Personalized guidance on crop selection, pest management, and best practices."
+                />
+                <ServiceCard
+                    icon="🧪"
+                    title="Soil Testing"
+                    description="Accurate soil analysis and fertilizer recommendations for better yields."
+                />
+                <ServiceCard
+                    icon="🐄"
+                    title="Animal Health Clinics"
+                    description="On-site and virtual vet consultations, vaccination drives, and disease prevention."
+                />
             </section>
+
+            {/* Additional Services */}
             <section className="max-w-5xl mx-auto px-4 mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center text-center hover:shadow-2xl transition">
-                    <span className="text-4xl mb-3">🎓</span>
-                    <h3 className="text-xl font-bold text-green-800 mb-2">Training & Workshops</h3>
-                    <p className="text-gray-700">Capacity building for farmers, youth, and women’s groups on modern agri-techniques.</p>
-                </div>
-                <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center text-center hover:shadow-2xl transition">
-                    <span className="text-4xl mb-3">🤝</span>
-                    <h3 className="text-xl font-bold text-green-800 mb-2">Community Events</h3>
-                    <p className="text-gray-700">Field days, demo plots, and networking for local agri-entrepreneurs.</p>
-                </div>
+                <ServiceCard
+                    icon="🎓"
+                    title="Training & Workshops"
+                    description="Capacity building for farmers, youth, and women’s groups on modern agri-techniques."
+                />
+                <ServiceCard
+                    icon="🤝"
+                    title="Community Events"
+                    description="Field days, demo plots, and networking for local agri-entrepreneurs."
+                />
             </section>
-            {/* Call to Action Section */}
+
+            {/* CTA Section */}
             <section className="max-w-3xl mx-auto mt-20 text-center">
                 <div className="bg-green-700 rounded-2xl p-10 shadow-xl">
                     <h2 className="text-3xl font-bold text-white mb-2">Book a Service or Learn More</h2>
                     <p className="text-white mb-4 text-lg">Contact us to schedule a service, join a workshop, or get expert advice for your farm or business.</p>
-                    <a href="/contact" className="inline-block bg-white text-green-700 font-bold px-10 py-4 rounded-xl text-xl shadow-lg hover:bg-green-100 transition">Contact Us</a>
+                    <Link
+                        to="/contact"
+                        className="inline-block bg-white text-green-700 font-bold px-10 py-4 rounded-xl text-xl shadow-lg hover:bg-green-100 transition"
+                    >
+                        Contact Us
+                    </Link>
                 </div>
             </section>
+
             <Footer />
         </div>
     );
-} 
+}

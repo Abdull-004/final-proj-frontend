@@ -15,6 +15,14 @@ import Services from './Services';
 import Contact from './Contact';
 import { useAuth } from './AuthContext';
 
+function AdminRoute({ children }) {
+  const { user } = useAuth();
+  if (!user || !user.isAdmin) {
+    return <div className="p-8 text-red-600 font-semibold">Access denied: Admins only</div>;
+  }
+  return children;
+}
+
 export default function App() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -31,27 +39,26 @@ export default function App() {
             Farmcare Agrovet
           </div>
 
-          {/* Desktop menu */}
+          {/* Desktop Nav */}
           <div className="hidden md:flex space-x-4 items-center">
             <Link to="/" className="text-gray-700 hover:text-green-700">About</Link>
             <Link to="/services" className="text-gray-700 hover:text-green-700">Services</Link>
             <Link to="/contact" className="text-gray-700 hover:text-green-700">Contact</Link>
-
-            {/* Features Dropdown */}
             <div className="relative group">
               <span className="text-gray-700 hover:text-green-700 cursor-pointer">Features</span>
               <div className="absolute left-0 mt-2 w-56 bg-white rounded shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none group-hover:pointer-events-auto z-20">
-                <Link to="/features/all-in-one" className="block px-4 py-2 text-gray-700 hover:bg-green-50 hover:text-green-700">All-in-One Agrovet</Link>
-                <Link to="/features/delivery" className="block px-4 py-2 text-gray-700 hover:bg-green-50 hover:text-green-700">Fast Delivery</Link>
-                <Link to="/features/expert-support" className="block px-4 py-2 text-gray-700 hover:bg-green-50 hover:text-green-700">Expert Support</Link>
+                <Link to="/features/all-in-one" className="block px-4 py-2 hover:bg-green-50">All-in-One Agrovet</Link>
+                <Link to="/features/delivery" className="block px-4 py-2 hover:bg-green-50">Fast Delivery</Link>
+                <Link to="/features/expert-support" className="block px-4 py-2 hover:bg-green-50">Expert Support</Link>
               </div>
             </div>
-
             <Link to="/products" className="text-gray-700 hover:text-green-700">Products</Link>
             <Link to="/cart" className="text-gray-700 hover:text-green-700">Cart</Link>
+
             {!user && <Link to="/account" className="text-gray-700 hover:text-green-700 font-semibold">Login</Link>}
             <Link to="/admin-login" className="text-gray-700 hover:text-green-700 font-semibold">Admin Login</Link>
-            {user && user.isAdmin && <Link to="/admin" className="text-gray-700 hover:text-green-700">Admin Dashboard</Link>}
+
+            {user?.isAdmin && <Link to="/admin" className="text-gray-700 hover:text-green-700">Admin Dashboard</Link>}
             {user && !user.isAdmin && <Link to="/account" className="text-gray-700 hover:text-green-700">Account</Link>}
             {user && (
               <>
@@ -67,13 +74,7 @@ export default function App() {
               onClick={() => setIsOpen(!isOpen)}
               className="text-gray-700 focus:outline-none"
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {isOpen ? (
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 ) : (
@@ -84,7 +85,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* Mobile menu items */}
+        {/* Mobile Nav */}
         {isOpen && (
           <div className="md:hidden mt-2 space-y-2 px-4 pb-4">
             <Link to="/" className="block text-gray-700 hover:text-green-700">About</Link>
@@ -97,7 +98,7 @@ export default function App() {
             <Link to="/cart" className="block text-gray-700 hover:text-green-700">Cart</Link>
             {!user && <Link to="/account" className="block text-gray-700 hover:text-green-700">Login</Link>}
             <Link to="/admin-login" className="block text-gray-700 hover:text-green-700">Admin Login</Link>
-            {user && user.isAdmin && <Link to="/admin" className="block text-gray-700 hover:text-green-700">Admin Dashboard</Link>}
+            {user?.isAdmin && <Link to="/admin" className="block text-gray-700 hover:text-green-700">Admin Dashboard</Link>}
             {user && !user.isAdmin && <Link to="/account" className="block text-gray-700 hover:text-green-700">Account</Link>}
             {user && (
               <>
@@ -122,7 +123,7 @@ export default function App() {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/account" element={<Account />} />
         <Route path="/admin-login" element={<AdminLogin />} />
-        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
       </Routes>
     </>
   );

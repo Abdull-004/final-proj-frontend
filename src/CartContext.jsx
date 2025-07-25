@@ -1,37 +1,57 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 
+// Create context
 const CartContext = createContext();
 
-export function CartProvider({ children }) {
-    const [cart, setCart] = useState([]);
+// Hook to use cart
+export const useCart = () => useContext(CartContext);
 
-    const addToCart = (product) => {
+// Cart provider
+export const CartProvider = ({ children }) => {
+    const [cart, setCart] = useState(() => {
+        // Load cart from localStorage on initial render
+        const storedCart = localStorage.getItem('cart');
+        return storedCart ? JSON.parse(storedCart) : [];
+    });
+
+    useEffect(() => {
+        // Save cart to localStorage whenever it changes
+        localStorage.setItem('cart', JSON.stringify(cart));
+    }, [cart]);
+
+    const addToCart = (item) => {
         setCart(prev => {
-            const existing = prev.find(item => item._id === product._id);
-            if (existing) {
-                return prev.map(item => item._id === product._id ? { ...item, quantity: item.quantity + 1 } : item);
+            const existingItem = prev.find(i => i._id === item._id);
+            if (existingItem) {
+                return prev.map(i =>
+                    i._id === item._id
+                        ? { ...i, quantity: i.quantity + 1 }
+                        : i
+                );
             }
-            return [...prev, { ...product, quantity: 1 }];
+            return [...prev, { ...item, quantity: 1 }];
         });
+    };
+
+    const updateQuantity = (id, quantity) => {
+        setCart(prev =>
+            prev.map(item =>
+                item._id === id ? { ...item, quantity } : item
+            )
+        );
     };
 
     const removeFromCart = (id) => {
         setCart(prev => prev.filter(item => item._id !== id));
     };
 
-    const updateQuantity = (id, quantity) => {
-        setCart(prev => prev.map(item => item._id === id ? { ...item, quantity } : item));
+    const clearCart = () => {
+        setCart([]);
     };
 
-    const clearCart = () => setCart([]);
-
     return (
-        <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart }}>
+        <CartContext.Provider value={{ cart, addToCart, updateQuantity, removeFromCart, clearCart }}>
             {children}
         </CartContext.Provider>
     );
-}
-
-export function useCart() {
-    return useContext(CartContext);
-} 
+};

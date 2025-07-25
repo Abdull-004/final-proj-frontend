@@ -17,35 +17,56 @@ export default function ProductDetails() {
     }, [id]);
 
     const fetchProduct = async () => {
-        setLoading(true); setError(null);
+        setLoading(true);
+        setError(null);
         try {
             const res = await apiRequest(`/products/${id}`);
             setProduct(res);
         } catch (err) {
-            setError(err.message);
+            setError(err.message || 'Failed to load product');
         }
         setLoading(false);
     };
 
-    if (loading) return <div className="text-center py-8">Loading...</div>;
-    if (error) return <div className="text-center text-red-600 py-8">{error}</div>;
-    if (!product) return <div className="text-center py-8">Product not found.</div>;
+    const handleAddToCart = () => {
+        addToCart(product);
+        setAdded(true);
+        setTimeout(() => setAdded(false), 2000); // reset after 2s
+    };
+
+    if (loading) return <div className="text-center py-10 text-gray-600">Loading product...</div>;
+    if (error) return <div className="text-center text-red-600 py-10">{error}</div>;
+    if (!product) return <div className="text-center py-10">Product not found.</div>;
 
     return (
-        <div className="max-w-2xl mx-auto p-4 bg-white rounded-xl shadow-lg mt-6 border border-gray-100">
-            <img src={product.image} alt={product.name} className="w-full h-64 object-cover rounded mb-4" />
-            <h2 className="text-2xl font-bold text-green-800 mb-2">{product.name}</h2>
-            <div className="text-lg text-gray-700 mb-2">Ksh {product.price}</div>
-            <div className="mb-2">Category: <span className="text-gray-700">{product.category}</span></div>
-            <div className="mb-2">Stock: <span className="text-gray-700">{product.stock}</span></div>
-            <div className="mb-4 text-gray-700">{product.description}</div>
+        <div className="max-w-2xl mx-auto p-6 mt-8 bg-white rounded-xl shadow-lg border border-gray-100">
+            <img
+                src={product.image}
+                alt={product.name}
+                className="w-full h-64 object-cover rounded mb-6"
+            />
+            <h2 className="text-3xl font-bold text-green-800 mb-2">{product.name}</h2>
+            <p className="text-xl text-gray-700 mb-1">Ksh {product.price.toLocaleString()}</p>
+            <p className="mb-1 text-sm text-gray-600">Category: <span className="font-medium">{product.category}</span></p>
+            <p className="mb-4 text-sm text-gray-600">In Stock: <span className="font-medium">{product.stock}</span></p>
+            <p className="text-gray-700 mb-6">{product.description}</p>
+
             <button
-                className="bg-green-700 text-white px-6 py-2 rounded hover:bg-green-800 font-semibold"
-                onClick={() => { addToCart(product); setAdded(true); }}
-                disabled={added}
+                onClick={handleAddToCart}
+                disabled={added || product.stock === 0}
+                className={`px-6 py-2 rounded font-semibold transition ${product.stock === 0
+                        ? 'bg-gray-400 text-white cursor-not-allowed'
+                        : added
+                            ? 'bg-green-500 text-white'
+                            : 'bg-green-700 hover:bg-green-800 text-white'
+                    }`}
             >
-                {added ? 'Added to Cart' : 'Add to Cart'}
+                {product.stock === 0
+                    ? 'Out of Stock'
+                    : added
+                        ? 'Added to Cart'
+                        : 'Add to Cart'}
             </button>
         </div>
     );
-} 
+}

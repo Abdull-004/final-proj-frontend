@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 function Footer() {
     return (
         <footer className="mt-16 bg-green-800 text-white py-8 text-center rounded-t-3xl shadow-inner">
@@ -11,6 +13,22 @@ function Footer() {
 }
 
 export default function Contact() {
+    const [form, setForm] = useState({ name: '', email: '', message: '' });
+    const [submitted, setSubmitted] = useState(false);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setForm((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        // You can send this to a backend or email service here
+        console.log('Contact form submitted:', form);
+        setSubmitted(true);
+        setForm({ name: '', email: '', message: '' });
+    };
+
     return (
         <div className="bg-gradient-to-br from-green-50 via-white to-green-100 min-h-screen pb-16">
             {/* Hero Section */}
@@ -22,6 +40,7 @@ export default function Contact() {
                     </p>
                 </div>
             </section>
+
             {/* Contact Info Cards */}
             <section className="max-w-4xl mx-auto px-4 mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center text-center">
@@ -40,34 +59,67 @@ export default function Contact() {
                     <div className="text-gray-700">Garissa Town, Kenya</div>
                 </div>
             </section>
+
             {/* Contact Form */}
             <section className="max-w-3xl mx-auto mt-16">
-                <form className="bg-white rounded-2xl shadow-lg p-8 space-y-6">
+                <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg p-8 space-y-6">
                     <h2 className="text-2xl font-bold text-green-800 mb-2 text-center">Send Us a Message</h2>
+                    {submitted && <div className="text-green-700 text-center font-medium mb-2">Message sent successfully!</div>}
+
                     <div>
-                        <label className="block mb-1 font-medium">Name</label>
-                        <input className="w-full border rounded px-3 py-2" placeholder="Your Name" required />
+                        <label htmlFor="name" className="block mb-1 font-medium">Name</label>
+                        <input
+                            id="name"
+                            name="name"
+                            value={form.name}
+                            onChange={handleChange}
+                            className="w-full border rounded px-3 py-2"
+                            placeholder="Your Name"
+                            required
+                        />
                     </div>
                     <div>
-                        <label className="block mb-1 font-medium">Email</label>
-                        <input className="w-full border rounded px-3 py-2" type="email" placeholder="you@email.com" required />
+                        <label htmlFor="email" className="block mb-1 font-medium">Email</label>
+                        <input
+                            id="email"
+                            name="email"
+                            type="email"
+                            value={form.email}
+                            onChange={handleChange}
+                            className="w-full border rounded px-3 py-2"
+                            placeholder="you@email.com"
+                            required
+                        />
                     </div>
                     <div>
-                        <label className="block mb-1 font-medium">Message</label>
-                        <textarea className="w-full border rounded px-3 py-2" rows={4} placeholder="How can we help you?" required />
+                        <label htmlFor="message" className="block mb-1 font-medium">Message</label>
+                        <textarea
+                            id="message"
+                            name="message"
+                            value={form.message}
+                            onChange={handleChange}
+                            className="w-full border rounded px-3 py-2"
+                            rows={4}
+                            placeholder="How can we help you?"
+                            required
+                        />
                     </div>
-                    <button type="submit" className="bg-green-700 text-white px-6 py-2 rounded font-semibold hover:bg-green-800 w-full">Send Message</button>
+                    <button type="submit" className="bg-green-700 text-white px-6 py-2 rounded font-semibold hover:bg-green-800 w-full">
+                        Send Message
+                    </button>
                 </form>
             </section>
-            {/* Map/Location Section (optional) */}
+
+            {/* Map/Location Section */}
             <section className="max-w-3xl mx-auto mt-12 text-center">
                 <div className="bg-gray-100 rounded-lg p-6">
                     <div className="mb-2 font-semibold">Find Us</div>
                     <div className="text-gray-600">Garissa Town, Kenya</div>
-                    {/* You can embed a map here if desired */}
+                    {/* Embed Google Maps iframe here if needed */}
                 </div>
             </section>
+
             <Footer />
         </div>
     );
-} 
+}

@@ -15,13 +15,21 @@ export default function Login() {
 
     const handleSubmit = async e => {
         e.preventDefault();
-        setLoading(true); setError(null);
+        setLoading(true);
+        setError(null);
+
         const success = await login(form.email, form.password);
         if (success) {
-            navigate('/');
+            const storedUser = JSON.parse(localStorage.getItem('user'));
+            if (storedUser?.isAdmin) {
+                navigate('/admin');
+            } else {
+                navigate('/account');
+            }
         } else {
             setError('Invalid credentials');
         }
+
         setLoading(false);
     };
 
@@ -47,4 +55,4 @@ export default function Login() {
             </div>
         </div>
     );
-} 
+}

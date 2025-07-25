@@ -2,212 +2,277 @@ import { useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { apiRequest } from './api';
 
+/* ⬇️  Cloudinary settings for image uploads */
 const CLOUDINARY_UPLOAD_PRESET = 'market-hub-unsigned';
 const CLOUDINARY_CLOUD_NAME = 'dwtxstchf';
 
 export default function AdminDashboard() {
-    const { user, token } = useAuth();
-    const [products, setProducts] = useState([]);
+    const { user, token, logout } = useAuth();
+
+    /* state */
+    const [tab, setTab] = useState('overview');  // overview | products | orders
     const [orders, setOrders] = useState([]);
-    const [form, setForm] = useState({ name: '', image: '', price: '', description: '', category: '', location: '' });
-    const [editingId, setEditingId] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(false);
-    const [tab, setTab] = useState('products');
 
-    // Fetch products
+    /* product‑form state */
+    const emptyForm = { name: '', price: '', image: '', category: '', description: '', location: '' };
+    const [form, setForm] = useState(emptyForm);
+    const [editingId, setEdit] = useState(null);          // null = add  | id = edit
+    const [imgBusy, setImgBusy] = useState(false);         // Cloudinary upload spinner
+    const [formBusy, setFormBusy] = useState(false);       // Add / update spinner
+    const [formMsg, setFormMsg] = useState(null);        // success | fail message
+
+    /* initial load */
     useEffect(() => {
-        if (tab === 'products') fetchProducts();
-        if (tab === 'orders') fetchOrders();
-        // eslint-disable-next-line
-    }, [tab]);
+        if (user?.isAdmin) fetchAll();
+    }, [user]);
 
-    const fetchProducts = async () => {
-        setLoading(true); setError(null);
+    /** ─────────────────────────────────────────────
+     * Fetch orders + products in parallel
+     * ────────────────────────────────────────────*/
+    const fetchAll = async () => {
+        setLoading(true);
         try {
-            const res = await apiRequest('/products', 'GET');
-            setProducts(res);
+            const [ordersRes, productsRes] = await Promise.all([
+                apiRequest('/orders', 'GET', null, token),
+                apiRequest('/products', 'GET', null, token),
+            ]);
+            setOrders(ordersRes);
+            setProducts(productsRes);
         } catch (err) {
             setError(err.message);
         }
         setLoading(false);
     };
 
-    const fetchOrders = async () => {
-        setLoading(true); setError(null);
-        try {
-            const res = await apiRequest('/orders', 'GET', null, token);
-            setOrders(res);
-        } catch (err) {
-            setError(err.message);
-        }
-        setLoading(false);
-    };
-
-    const handleImageChange = async (e) => {
-        const file = e.target.files[0];
+    /** ─────────────────────────────────────────────
+     * IMAGE UPLOAD  →  Cloudinary
+     * ────────────────────────────────────────────*/
+    const uploadImg = async (file) => {
         if (!file) return;
-        setError(null);
-        setSuccess(false);
+        setImgBusy(true);
         try {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
-                method: 'POST',
-                body: formData,
-            });
+            const fd = new FormData();
+            fd.append('file', file);
+            fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
             const data = await res.json();
-            if (data.secure_url) {
-                setForm(f => ({ ...f, image: data.secure_url }));
-                setSuccess(true);
-            } else {
-                setError('Image upload failed.');
-            }
-        } catch (err) {
-            setError('Image upload failed.');
+            if (data.secure_url) setForm(f => ({ ...f, image: data.secure_url }));
+            else throw new Error('Image upload failed');
+        } catch {
+            alert('Image upload failed. Try again.');
         }
+        setImgBusy(false);
     };
 
-    const handleChange = e => {
-        setForm({ ...form, [e.target.name]: e.target.value });
-    };
-
-    const handleSubmit = async e => {
+    /** ─────────────────────────────────────────────
+     * ADD / UPDATE  product
+     * ────────────────────────────────────────────*/
+    const saveProduct = async (e) => {
         e.preventDefault();
-        setLoading(true); setError(null); setSuccess(false);
+        setFormBusy(true);
+        setFormMsg(null);
         try {
             if (editingId) {
+                /* update */
                 await apiRequest(`/products/${editingId}`, 'PUT', form, token);
-                setSuccess(true);
-                setEditingId(null);
+                setFormMsg('Product updated ✔');
             } else {
+                /* add    */
                 await apiRequest('/products', 'POST', form, token);
-                setSuccess(true);
+                setFormMsg('Product added ✔');
             }
-            setForm({ name: '', image: '', price: '', description: '', category: '', location: '' });
-            fetchProducts();
+            /* refresh list */
+            fetchAll();
+            /* reset */
+            setForm(emptyForm);
+            setEdit(null);
         } catch (err) {
-            setError(err.message);
+            setFormMsg(err.message);
         }
-        setLoading(false);
+        setFormBusy(false);
     };
 
-    const handleEdit = (product) => {
-        setEditingId(product._id);
-        setForm({
-            name: product.name,
-            image: product.image,
-            price: product.price,
-            description: product.description,
-            category: product.category,
-            location: product.location,
-        });
-        setError(null);
-        setSuccess(false);
-    };
-
-    const handleDelete = async (id) => {
+    /** ─────────────────────────────────────────────
+     * DELETE product
+     * ────────────────────────────────────────────*/
+    const delProduct = async (id) => {
         if (!window.confirm('Delete this product?')) return;
-        setLoading(true); setError(null);
         try {
             await apiRequest(`/products/${id}`, 'DELETE', null, token);
-            fetchProducts();
+            fetchAll();
         } catch (err) {
-            setError(err.message);
+            alert(err.message);
         }
-        setLoading(false);
     };
 
-    if (!user || !user.isAdmin) {
-        return <div className="text-center py-8 text-red-600">Access denied. Admins only.</div>;
+    /** ─────────────────────────────────────────────
+     * RENDER
+     * ────────────────────────────────────────────*/
+    if (!user?.isAdmin) {
+        return <div className="text-center mt-10 text-red-600 font-semibold">Access denied. Admins only.</div>;
     }
 
+    if (loading) return <div className="p-8 text-center">Loading dashboard…</div>;
+    if (error) return <div className="p-8 text-center text-red-600">{error}</div>;
+
+    /* ⬇️  metrics for Overview */
+    const totalSales = orders.filter(o => o.paymentStatus === 'paid')
+        .reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.price * i.quantity, 0), 0);
+    const totalOrders = orders.length;
+    const totalProds = products.length;
+
+    /* helper for pretty money */
+    const money = (n) => n.toLocaleString();
+
     return (
-        <div className="max-w-5xl mx-auto p-4">
-            <div className="flex gap-4 mb-6">
-                <button onClick={() => setTab('products')} className={`px-4 py-2 rounded font-semibold ${tab === 'products' ? 'bg-green-700 text-white' : 'bg-gray-200 text-gray-700'}`}>Products</button>
-                <button onClick={() => setTab('orders')} className={`px-4 py-2 rounded font-semibold ${tab === 'orders' ? 'bg-green-700 text-white' : 'bg-gray-200 text-gray-700'}`}>Orders</button>
+        <div className="max-w-7xl mx-auto p-6">
+            {/* header */}
+            <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
+                <h1 className="text-3xl font-bold text-green-800">Admin Dashboard</h1>
+                <button onClick={logout} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
+                    Logout
+                </button>
             </div>
-            {tab === 'products' && (
-                <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-200">
-                    <h3 className="text-lg font-semibold mb-4">{editingId ? 'Edit Product' : 'Add New Product'}</h3>
-                    {error && <div className="mb-2 text-red-600 text-center">{error}</div>}
-                    {success && <div className="mb-2 text-green-600 text-center">{editingId ? 'Product updated!' : 'Product added!'}</div>}
-                    <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block mb-1 font-medium">Name</label>
-                            <input type="text" name="name" className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" value={form.name} onChange={handleChange} required />
-                        </div>
-                        <div>
-                            <label className="block mb-1 font-medium">Image</label>
-                            <input type="file" accept="image/*" className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" onChange={handleImageChange} />
-                            {form.image && <img src={form.image} alt="Preview" className="w-20 h-20 rounded mt-2 object-cover border-2 border-green-700" />}
-                        </div>
-                        <div>
-                            <label className="block mb-1 font-medium">Price</label>
-                            <input type="number" name="price" className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" value={form.price} onChange={handleChange} required />
-                        </div>
-                        <div>
-                            <label className="block mb-1 font-medium">Category</label>
-                            <input type="text" name="category" className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" value={form.category} onChange={handleChange} />
-                        </div>
-                        <div className="md:col-span-2">
-                            <label className="block mb-1 font-medium">Description</label>
-                            <textarea name="description" className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" value={form.description} onChange={handleChange} required />
-                        </div>
-                        <div className="md:col-span-2">
-                            <label className="block mb-1 font-medium">Location</label>
-                            <input type="text" name="location" className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" value={form.location} onChange={handleChange} />
-                        </div>
-                        <div className="md:col-span-2 flex gap-2">
-                            <button type="submit" className="bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800 font-semibold" disabled={loading}>
-                                {loading ? (editingId ? 'Updating...' : 'Adding...') : (editingId ? 'Update' : 'Add')}
-                            </button>
-                            {editingId && (
-                                <button type="button" className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 font-semibold" onClick={() => { setEditingId(null); setForm({ name: '', image: '', price: '', description: '', category: '', location: '' }); setError(null); setSuccess(false); }}>
-                                    Cancel
-                                </button>
-                            )}
-                        </div>
-                    </form>
-                </div>
-            )}
-            {tab === 'orders' && (
-                <div>
-                    <h2 className="text-2xl font-bold mb-4 text-green-800">Orders</h2>
-                    {loading ? <div>Loading...</div> : error ? <div className="text-red-600">{error}</div> : (
-                        <div className="space-y-6">
-                            {orders.length === 0 ? <div className="text-gray-500">No orders yet.</div> : orders.map(order => (
-                                <div key={order._id} className="bg-white rounded shadow p-4 border border-gray-100">
-                                    <div className="font-bold text-lg mb-2">Order #{order._id.slice(-6).toUpperCase()}</div>
-                                    <div className="mb-2 flex gap-4 items-center">
-                                        <span className="font-semibold">Status:</span>
-                                        <span className="inline-block px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs">{order.status}</span>
-                                        <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${order.paymentStatus === 'paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                            {order.paymentStatus === 'paid' ? 'Paid' : 'Pending Payment'}
-                                        </span>
-                                    </div>
-                                    <div className="mb-2"><span className="font-semibold">Customer:</span> {order.customerName} ({order.customerEmail}, {order.customerPhone})</div>
-                                    <div className="mb-2"><span className="font-semibold">Address:</span> {order.customerAddress}</div>
-                                    <div className="mb-2 font-semibold">Items:</div>
-                                    <ul className="ml-4 list-disc">
-                                        {order.items.map(item => (
-                                            <li key={item.product} className="flex items-center gap-2 mb-1">
-                                                <img src={item.image} alt={item.name} className="w-10 h-10 object-cover rounded" />
-                                                <span>{item.name}</span> x <span>{item.quantity}</span> @ Ksh {item.price}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                    <div className="mt-2 text-right font-bold">Total: Ksh {order.items.reduce((sum, i) => sum + i.price * i.quantity, 0)}</div>
-                                    <div className="text-xs text-gray-400 mt-1">Placed: {new Date(order.createdAt).toLocaleString()}</div>
+
+            {/* nav tabs */}
+            <div className="flex gap-2 mb-6">
+                {['overview', 'products', 'orders'].map(t => (
+                    <button key={t}
+                        className={`px-4 py-2 rounded font-semibold capitalize ${tab === t ? 'bg-green-700 text-white' : 'bg-gray-200 text-gray-700'
+                            }`}
+                        onClick={() => setTab(t)}
+                    >{t}</button>
+                ))}
+            </div>
+
+            {/* -------- OVERVIEW TAB -------- */}
+            {tab === 'overview' && (
+                <div className="grid md:grid-cols-3 gap-6">
+                    {/* metrics cards */}
+                    <div className="bg-white shadow rounded p-6">
+                        <h3 className="text-lg font-semibold text-gray-600">Total Sales (paid)</h3>
+                        <p className="text-2xl font-bold text-green-700 mt-2">Ksh {money(totalSales)}</p>
+                    </div>
+                    <div className="bg-white shadow rounded p-6">
+                        <h3 className="text-lg font-semibold text-gray-600">Total Orders</h3>
+                        <p className="text-2xl font-bold text-green-700 mt-2">{totalOrders}</p>
+                    </div>
+                    <div className="bg-white shadow rounded p-6">
+                        <h3 className="text-lg font-semibold text-gray-600">Products Listed</h3>
+                        <p className="text-2xl font-bold text-green-700 mt-2">{totalProds}</p>
+                    </div>
+
+                    {/* recent orders */}
+                    <div className="md:col-span-2 bg-white shadow rounded p-6">
+                        <h2 className="text-lg font-semibold text-gray-700 mb-4">Recent Orders</h2>
+                        <div className="max-h-72 overflow-y-auto divide-y">
+                            {orders.slice(0, 8).map(o => (
+                                <div key={o._id} className="py-3 flex justify-between text-sm">
+                                    <div>#{o._id.slice(-6).toUpperCase()}</div>
+                                    <div>{new Date(o.createdAt).toLocaleDateString()}</div>
+                                    <div className={`${o.paymentStatus === 'paid' ? 'text-green-700' : 'text-red-600'}`}>{o.paymentStatus}</div>
+                                    <div>Ksh {money(o.items.reduce((s, i) => s + i.price * i.quantity, 0))}</div>
                                 </div>
                             ))}
                         </div>
-                    )}
+                    </div>
+                </div>
+            )}
+
+            {/* -------- PRODUCTS TAB -------- */}
+            {tab === 'products' && (
+                <div className="grid md:grid-cols-3 gap-6">
+                    {/* product form */}
+                    <div className="bg-white shadow rounded p-6">
+                        <h2 className="text-lg font-semibold mb-4">{editingId ? 'Edit Product' : 'Add Product'}</h2>
+                        {formMsg && <div className="mb-3 text-center text-green-700">{formMsg}</div>}
+                        <form onSubmit={saveProduct} className="space-y-3">
+                            <input className="w-full border rounded px-3 py-2" placeholder="Name" name="name" value={form.name} onChange={e => setForm({ ...form, [e.target.name]: e.target.value })} required />
+                            <input className="w-full border rounded px-3 py-2" placeholder="Price" name="price" value={form.price} onChange={e => setForm({ ...form, [e.target.name]: e.target.value })} required />
+                            <input className="w-full border rounded px-3 py-2" placeholder="Category" name="category" value={form.category} onChange={e => setForm({ ...form, [e.target.name]: e.target.value })} />
+                            <input className="w-full border rounded px-3 py-2" placeholder="Location" name="location" value={form.location} onChange={e => setForm({ ...form, [e.target.name]: e.target.value })} />
+                            <textarea className="w-full border rounded px-3 py-2" placeholder="Description"
+                                name="description" value={form.description}
+                                onChange={e => setForm({ ...form, [e.target.name]: e.target.value })} />
+                            {/* image uploader */}
+                            <div className="flex items-center gap-3">
+                                <input type="file" accept="image/*" onChange={e => uploadImg(e.target.files[0])} />
+                                {imgBusy && <span className="text-xs">Uploading…</span>}
+                            </div>
+                            {form.image && <img src={form.image} alt="preview" className="w-20 h-20 object-cover rounded border" />}
+                            <div className="flex gap-2">
+                                <button type="submit" disabled={formBusy}
+                                    className={`flex-1 py-2 rounded text-white font-semibold ${formBusy ? 'bg-green-400' : 'bg-green-700 hover:bg-green-800'}`}>
+                                    {formBusy ? 'Saving…' : editingId ? 'Update' : 'Add'}
+                                </button>
+                                {editingId && (
+                                    <button type="button" onClick={() => { setEdit(null); setForm(emptyForm); }}
+                                        className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded font-semibold">Cancel</button>
+                                )}
+                            </div>
+                        </form>
+                    </div>
+
+                    {/* product list */}
+                    <div className="md:col-span-2 bg-white shadow rounded p-6 overflow-x-auto">
+                        <h2 className="text-lg font-semibold mb-4">Products</h2>
+                        <table className="min-w-full text-sm">
+                            <thead>
+                                <tr className="text-left bg-gray-50">
+                                    <th className="p-2">Image</th><th className="p-2">Name</th><th className="p-2">Price</th>
+                                    <th className="p-2">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {products.map(p => (
+                                    <tr key={p._id} className="border-t">
+                                        <td className="p-2"><img src={p.image} alt={p.name} className="w-12 h-12 object-cover rounded" /></td>
+                                        <td className="p-2">{p.name}</td>
+                                        <td className="p-2">Ksh {money(p.price)}</td>
+                                        <td className="p-2 space-x-2">
+                                            <button onClick={() => { setEdit(p._id); setForm({ ...p }); }}
+                                                className="text-blue-600 hover:underline">Edit</button>
+                                            <button onClick={() => delProduct(p._id)}
+                                                className="text-red-600 hover:underline">Delete</button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+
+            {/* -------- ORDERS TAB -------- */}
+            {tab === 'orders' && (
+                <div className="bg-white shadow rounded p-6 overflow-x-auto">
+                    <h2 className="text-lg font-semibold mb-4">All Orders</h2>
+                    <table className="min-w-full text-sm">
+                        <thead>
+                            <tr className="text-left bg-gray-50">
+                                <th className="p-2">#ID</th><th className="p-2">Date</th>
+                                <th className="p-2">Customer</th><th className="p-2">Total (Ksh)</th>
+                                <th className="p-2">Payment</th><th className="p-2">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {orders.map(o => (
+                                <tr key={o._id} className="border-t">
+                                    <td className="p-2">#{o._id.slice(-6).toUpperCase()}</td>
+                                    <td className="p-2">{new Date(o.createdAt).toLocaleDateString()}</td>
+                                    <td className="p-2">{o.customerName}</td>
+                                    <td className="p-2">{money(o.items.reduce((s, i) => s + i.price * i.quantity, 0))}</td>
+                                    <td className={`p-2 ${o.paymentStatus === 'paid' ? 'text-green-700' : 'text-red-600'}`}>{o.paymentStatus}</td>
+                                    <td className="p-2">{o.status}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             )}
         </div>
     );
-} 
+}
