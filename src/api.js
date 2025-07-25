@@ -1,6 +1,6 @@
 // src/api.js
 
-export const API_BASE = import.meta.env.VITE_API_BASE_URL || "https://final-proj-2-ypf3.onrender.com";
+export const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 export const apiRequest = async (endpoint, method = 'GET', data = null, token = null) => {
     const headers = { 'Content-Type': 'application/json' };
